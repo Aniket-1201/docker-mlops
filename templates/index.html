@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iris ML Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding-top: 50px; }
+        .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="text-center mb-5">
+        <h1 class="display-4">🌸 Iris Flower Predictor</h1>
+        <p class="lead">Built with Flask, Docker, and Redis. (Total Visitors: <strong>{{ count }}</strong>)</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card p-4">
+                <h3>1. Train the Model</h3>
+                <p class="text-muted">The model must be trained before it can make predictions.</p>
+                <button id="trainBtn" class="btn btn-primary mb-3" onclick="trainModel()">Train Model Now</button>
+                <div id="trainResult" class="alert alert-secondary" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card p-4">
+                <h3>2. Make a Prediction</h3>
+                <form id="predictForm" onsubmit="makePrediction(event)">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Sepal Length (cm)</label>
+                            <input type="number" step="0.1" class="form-control" id="sl" value="5.1" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Sepal Width (cm)</label>
+                            <input type="number" step="0.1" class="form-control" id="sw" value="3.5" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Petal Length (cm)</label>
+                            <input type="number" step="0.1" class="form-control" id="pl" value="1.4" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Petal Width (cm)</label>
+                            <input type="number" step="0.1" class="form-control" id="pw" value="0.2" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Predict Species</button>
+                </form>
+                <div id="predictResult" class="alert alert-info mt-3" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function trainModel() {
+        const btn = document.getElementById('trainBtn');
+        const resultDiv = document.getElementById('trainResult');
+        
+        btn.disabled = true;
+        btn.innerText = "Training...";
+        
+        const response = await fetch('/train');
+        const data = await response.json();
+        
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `✅ <strong>${data.message}</strong><br>Accuracy: ${data.accuracy}`;
+        resultDiv.className = 'alert alert-success';
+        
+        btn.innerText = "Model Trained!";
+    }
+
+    async function makePrediction(event) {
+        event.preventDefault(); // Prevent page reload
+        
+        const resultDiv = document.getElementById('predictResult');
+        resultDiv.style.display = 'none';
+
+        // Gather data from the form
+        const features = [
+            parseFloat(document.getElementById('sl').value),
+            parseFloat(document.getElementById('sw').value),
+            parseFloat(document.getElementById('pl').value),
+            parseFloat(document.getElementById('pw').value)
+        ];
+
+        // Send POST request to your Python app
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ features: features })
+        });
+        
+        const data = await response.json();
+        
+        resultDiv.style.display = 'block';
+        if (data.error) {
+            resultDiv.className = 'alert alert-danger mt-3';
+            resultDiv.innerHTML = `⚠️ ${data.error}`;
+        } else {
+            resultDiv.className = 'alert alert-success mt-3';
+            resultDiv.innerHTML = `🎉 Prediction: <strong>${data.predicted_class.toUpperCase()}</strong>`;
+        }
+    }
+</script>
+</body>
+</html>
