@@ -12,8 +12,8 @@ This application runs across two isolated Docker containers connected via a priv
 To run this project on your own machine, you just need Docker installed. 
 
 1. **Clone the repository:**
-   git clone [https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git](https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git)
-   cd YOUR_REPO_NAME
+   git clone [https://github.com/Aniket-1201/docker-mlops.git](https://github.com/Aniket-1201/docker-mlops.git)
+   cd docker-mlops
 
 2. **Build and start the containers:**
     docker-compose up --build
